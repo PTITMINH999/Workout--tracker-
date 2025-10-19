@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /workout
+
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/workout_tracker"
+    username: name
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+logging:
+  level:
+    org.springdoc: DEBUG
+    org.springframework.web: DEBUG
