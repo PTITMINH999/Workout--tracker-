@@ -47,8 +47,6 @@ Các bước chạy:
 
 cd workout-tracker
 
-# Tạo database trống tên workout_tracker trên MySQL
-
 mvn spring-boot:run
 
 2️⃣ Frontend
@@ -56,6 +54,9 @@ mvn spring-boot:run
 Yêu cầu: Node.js 18+, npm hoặc yarn
 
 Chạy frontend:
+
 cd workout-tracker-frontend
+
 npm install
+
 npm run dev
