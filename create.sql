@@ -57,6 +57,7 @@ CREATE TABLE workouts (
     user_id BIGINT,
     date DATETIME(6),
     notes VARCHAR(255),
+    status ENUM('PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
