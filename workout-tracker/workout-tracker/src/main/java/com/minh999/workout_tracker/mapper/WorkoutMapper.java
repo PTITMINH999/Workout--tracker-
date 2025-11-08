@@ -13,11 +13,13 @@ public interface WorkoutMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", source = "user")
     @Mapping(target = "workoutExercises", ignore = true)
+    @Mapping(target = "status", ignore = true)
     Workout toWorkout(WorkoutRequest request, User user);
 
     @Mapping(target = "userId", source = "user.id")
     @Mapping(target = "username", source = "user.username")
     WorkoutResponse toWorkoutResponse(Workout workout);
 
+    @Mapping(target = "status", ignore = true)
     void updateWorkout(@MappingTarget Workout workout, WorkoutRequest request);
 }

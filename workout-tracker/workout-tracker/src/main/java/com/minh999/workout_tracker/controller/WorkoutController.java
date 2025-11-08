@@ -48,7 +48,7 @@ public class WorkoutController {
     @PreAuthorize("hasRole('ADMIN')")
     ApiResponse<Page<WorkoutResponse>> getAllWorkouts(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "6") int size
+            @RequestParam(defaultValue = "15") int size
     ) {
         return ApiResponse.<Page<WorkoutResponse>>builder()
                 .result(workoutService.getAllWorkouts(page, size))
@@ -91,6 +91,22 @@ public class WorkoutController {
         workoutService.deleteWorkout(workoutId);
         return ApiResponse.<String>builder()
                 .result("Workout has been deleted")
+                .build();
+    }
+
+    @PutMapping("/{workoutId}/complete")
+    @PreAuthorize("hasRole('ADMIN') or @workoutService.isOwner(#workoutId, authentication.principal.id)")
+    public ApiResponse<WorkoutResponse> completeWorkout(@PathVariable Long workoutId) {
+        return ApiResponse.<WorkoutResponse>builder()
+                .result(workoutService.completeWorkout(workoutId))
+                .build();
+    }
+
+    @PutMapping("/{workoutId}/cancel")
+    @PreAuthorize("hasRole('ADMIN') or @workoutService.isOwner(#workoutId, authentication.principal.id)")
+    public ApiResponse<WorkoutResponse> cancelWorkout(@PathVariable Long workoutId) {
+        return ApiResponse.<WorkoutResponse>builder()
+                .result(workoutService.cancelWorkout(workoutId))
                 .build();
     }
 }

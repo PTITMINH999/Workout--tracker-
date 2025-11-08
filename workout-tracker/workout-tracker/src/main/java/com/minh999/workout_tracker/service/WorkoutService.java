@@ -5,6 +5,7 @@ import com.minh999.workout_tracker.dto.response.CaloriesResponse;
 import com.minh999.workout_tracker.dto.response.WorkoutResponse;
 import com.minh999.workout_tracker.entity.User;
 import com.minh999.workout_tracker.entity.Workout;
+import com.minh999.workout_tracker.entity.WorkoutStatus;
 import com.minh999.workout_tracker.exception.AppException;
 import com.minh999.workout_tracker.exception.ErrorCode;
 import com.minh999.workout_tracker.mapper.WorkoutMapper;
@@ -41,18 +42,53 @@ public class WorkoutService {
         return workoutMapper.toWorkoutResponse(workoutRepository.save(workout));
     }
 
+    private void updateLazyStatus(Workout workout) {
+        LocalDateTime now = LocalDateTime.now();
+        if (workout.getStatus() == WorkoutStatus.PENDING) {
+            if (now.isAfter(workout.getDate()) && now.isBefore(workout.getDate().plusHours(2))) {
+                workout.setStatus(WorkoutStatus.ACTIVE);
+                workoutRepository.save(workout);
+            } else if (now.isAfter(workout.getDate().plusHours(2))) {
+                workout.setStatus(WorkoutStatus.COMPLETED);
+                workoutRepository.save(workout);
+            }
+        } else if(workout.getStatus() == WorkoutStatus.ACTIVE && now.isAfter(workout.getDate().plusHours(3))){
+            workout.setStatus(WorkoutStatus.COMPLETED);
+            workoutRepository.save(workout);
+        }
+    }
+
     public List<WorkoutResponse> getWorkoutsByUserId(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        return workoutRepository.findByUser(user)
+        List<Workout> workouts = workoutRepository.findByUser(user);
+        workouts.forEach(this::updateLazyStatus);
+        return workouts
                 .stream()
                 .map(workoutMapper::toWorkoutResponse)
                 .toList();
     }
 
+    public WorkoutResponse completeWorkout(Long workoutId) {
+        Workout workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new AppException(ErrorCode.WORKOUT_NOT_EXISTED));
+        workout.setStatus(WorkoutStatus.COMPLETED);
+        workoutRepository.save(workout);
+        return workoutMapper.toWorkoutResponse(workout);
+    }
+
+    public WorkoutResponse cancelWorkout(Long workoutId) {
+        Workout workout = workoutRepository.findById(workoutId)
+                .orElseThrow(() -> new AppException(ErrorCode.WORKOUT_NOT_EXISTED));
+        workout.setStatus(WorkoutStatus.CANCELLED);
+        workoutRepository.save(workout);
+        return workoutMapper.toWorkoutResponse(workout);
+    }
+
     public Page<WorkoutResponse> getAllWorkouts(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
         Page<Workout> workouts = workoutRepository.findAll(pageable);
+        workouts.forEach(this::updateLazyStatus);
         return workouts.map(workoutMapper::toWorkoutResponse);
     }
 
@@ -61,6 +97,7 @@ public class WorkoutService {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(LocalTime.MAX);
         Page<Workout> workouts = workoutRepository.findByDateBetween(start,end, pageable);
+        workouts.forEach(this::updateLazyStatus);
         return workouts.map(workoutMapper::toWorkoutResponse);
     }
 

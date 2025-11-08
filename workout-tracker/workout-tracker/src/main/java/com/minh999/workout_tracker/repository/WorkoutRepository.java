@@ -34,12 +34,12 @@ public interface WorkoutRepository extends JpaRepository<Workout,Long> {
         LEFT JOIN w.workoutExercises we
         LEFT JOIN we.exercise e
         WHERE w.user.id = :userId
-          AND w.date >= :startOfWeek
-          AND w.date < :endOfWeek
+          AND w.date >= :start
+          AND w.date < :end
     """)
-    Object findWeeklyStats(@Param("userId") Long userId,
-                             @Param("startOfWeek") LocalDateTime startOfWeek,
-                             @Param("endOfWeek") LocalDateTime endOfWeek);
+    Object findStatsBetweenDate(@Param("userId") Long userId,
+                             @Param("start") LocalDateTime start,
+                             @Param("end") LocalDateTime end);
 
     List<Workout> findAllByUserIdAndDateBetween(
             Long userId,

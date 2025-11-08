@@ -27,6 +27,8 @@ public class Exercise {
 
     Double caloriesBurned;
 
+
+
     @OneToMany(mappedBy = "exercise", cascade = CascadeType.ALL, orphanRemoval = true)
     List<WorkoutExercise> workoutExercises;
 }

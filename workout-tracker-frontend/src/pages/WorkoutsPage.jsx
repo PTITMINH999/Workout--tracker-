@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { workoutApi } from "../api/workoutApi";
 import { toast } from "react-toastify";
-import WorkoutCard from "../components/workouts/WorkoutCard";
+import WorkoutList from "../components/workouts/WorkoutCard";
 import WorkoutDetailModal from "../components/workouts/WorkoutDetailModal";
 import EditWorkoutModal from "../components/workouts/EditWorkoutModal";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ const WorkoutsPage = () => {
       setLoading(true);
       let res;
       if (isAdmin) {
-        res = await workoutApi.getAll(pageNum, 12);
+        res = await workoutApi.getAll(pageNum, 20);
         const result = res.data.result;
         setWorkouts(result.content || []);
         setTotalPages(result.totalPages);
@@ -55,8 +55,6 @@ const WorkoutsPage = () => {
 
     try {
       setLoading(true);
-
-      // ✅ Giữ nguyên giờ người dùng chọn, không bị lệch múi giờ
       const localDate = new Date(dateValue);
       const formattedDate = `${localDate.getFullYear()}-${String(
         localDate.getMonth() + 1
@@ -67,12 +65,7 @@ const WorkoutsPage = () => {
         localDate.getMinutes()
       ).padStart(2, "0")}:${String(localDate.getSeconds()).padStart(2, "0")}`;
 
-      const payload = {
-        userId: user.id,
-        date: formattedDate,
-        notes,
-      };
-
+      const payload = { userId: user.id, date: formattedDate, notes };
       await workoutApi.create(payload);
       toast.success("Workout created successfully");
       setNotes("");
@@ -98,9 +91,29 @@ const WorkoutsPage = () => {
     }
   };
 
-  const handleBackToDashboard = () => {
-    navigate("/dashboard");
+  const handleComplete = async (id) => {
+    try {
+      await workoutApi.complete(id);
+      toast.success("Workout marked as completed");
+      fetchUserWorkouts(page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to complete workout");
+    }
   };
+
+  const handleCancel = async (id) => {
+    if (!window.confirm("Are you sure you want to cancel this workout?"))
+      return;
+    try {
+      await workoutApi.cancel(id);
+      toast.success("Workout cancelled");
+      fetchUserWorkouts(page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to cancel workout");
+    }
+  };
+
+  const handleBackToDashboard = () => navigate("/dashboard");
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -164,30 +177,23 @@ const WorkoutsPage = () => {
           </div>
         </form>
 
-        {/* Workout List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {loading ? (
-            <div className="col-span-full text-center py-8">Loading...</div>
-          ) : workouts.length ? (
-            workouts.map((w) => (
-              <WorkoutCard
-                key={w.id}
-                workout={w}
-                onView={(wk) => setSelectedWorkout(wk)}
-                onEdit={(wk) => setEditingWorkout(wk)}
-                onDelete={() => handleDelete(w.id)}
-              />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-8 text-gray-500">
-              No workouts found
-            </div>
-          )}
-        </div>
+        {/* Workout Table List */}
+        {loading ? (
+          <div className="text-center py-8">Loading...</div>
+        ) : (
+          <WorkoutList
+            workouts={workouts}
+            onView={(wk) => setSelectedWorkout(wk)}
+            onEdit={(wk) => setEditingWorkout(wk)}
+            onDelete={handleDelete}
+            onComplete={handleComplete}
+            onCancel={handleCancel}
+          />
+        )}
 
         {/* Pagination */}
         {isAdmin && totalPages > 1 && (
-          <div className="flex justify-center items-center gap-2 mt-8">
+          <div className="flex justify-center items-center gap-2 mt-4">
             <button
               className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
               disabled={page === 0}
@@ -217,7 +223,6 @@ const WorkoutsPage = () => {
           refreshParent={() => fetchUserWorkouts(page)}
         />
       )}
-
       {editingWorkout && (
         <EditWorkoutModal
           workout={editingWorkout}

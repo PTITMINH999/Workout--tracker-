@@ -42,13 +42,17 @@ public class StatsService {
         LocalDateTime startDate = LocalDate.of(year, month, 1).atStartOfDay();
         LocalDateTime endDate = startDate.plusMonths(1).minusNanos(1);
 
-        long totalWorkouts = workoutRepository.countWorkoutsByUserAndMonth(user, startDate, endDate);
+        Object resultObj = workoutRepository.findStatsBetweenDate(userId, startDate, endDate);
+        Object[] result = (Object[]) resultObj;
+        long totalWorkouts = ((Number) result[0]).longValue();
+        double totalCalories = ((Number) result[1]).doubleValue();
 
         return WorkoutStatsResponse.builder()
                 .userId(userId)
                 .year(year)
                 .month(month)
                 .totalWorkouts(totalWorkouts)
+                .totalCalories(totalCalories)
                 .build();
     }
 
@@ -75,7 +79,7 @@ public class StatsService {
         LocalDateTime endOfWeek = LocalDateTime.now();
         LocalDateTime startOfWeek = endOfWeek.minusDays(7);
 
-        Object resultObj = workoutRepository.findWeeklyStats(userId, startOfWeek, endOfWeek);
+        Object resultObj = workoutRepository.findStatsBetweenDate(userId, startOfWeek, endOfWeek);
         Object[] result = (Object[]) resultObj;
         long totalWorkouts = ((Number) result[0]).longValue();
         double totalCalories = ((Number) result[1]).doubleValue();

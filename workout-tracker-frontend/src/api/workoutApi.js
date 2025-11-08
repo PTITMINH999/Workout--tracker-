@@ -13,5 +13,8 @@ export const workoutApi = {
 
   delete: (id) => instance.delete(`/workouts/${id}`),
 
+  complete: (id) => instance.put(`/workouts/${id}/complete`),
+  cancel: (id) => instance.put(`/workouts/${id}/cancel`),
+
   getCalories: (workoutId) => instance.get(`/workouts/${workoutId}/calories`),
 };

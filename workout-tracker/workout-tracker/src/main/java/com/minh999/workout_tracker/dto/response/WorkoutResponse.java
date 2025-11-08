@@ -1,5 +1,6 @@
 package com.minh999.workout_tracker.dto.response;
 
+import com.minh999.workout_tracker.entity.WorkoutStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -15,5 +16,6 @@ public class WorkoutResponse {
     Long userId;
     String username;
     LocalDateTime date;
+    WorkoutStatus status;
     String notes;
 }

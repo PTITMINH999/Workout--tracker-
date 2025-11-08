@@ -29,6 +29,11 @@ public class Workout {
 
     String notes;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private WorkoutStatus status = WorkoutStatus.PENDING;
+
     @OneToMany(mappedBy = "workout", cascade = CascadeType.ALL, orphanRemoval = true)
     List<WorkoutExercise> workoutExercises;
 }

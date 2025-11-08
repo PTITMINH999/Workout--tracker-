@@ -26,7 +26,7 @@ public class StatsController {
     StatsService statsService;
     @GetMapping("/workouts")
     @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
-    ApiResponse<WorkoutStatsResponse> getWorkoutStats(
+    ApiResponse<WorkoutStatsResponse> getMonthlyWorkoutStats(
             @RequestParam Long userId,
             @RequestParam int year,
             @RequestParam int month
